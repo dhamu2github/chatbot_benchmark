@@ -1,0 +1,8 @@
+streamlit
+openai
+sentence-transformers
+python-dotenv
+torch
+langchain
+faiss-cpu
+rank-bm25
