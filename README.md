@@ -133,8 +133,5 @@ Logs are maintained in `log/chatbot.log` with timestamp, log level, and message 
 ## Contributing
 *Restricted to authorized Charles Schwab personnel*
 
-## License
-Proprietary - Charles Schwab
-
 ## Contact
 For support or inquiries, contact the Charles Schwab development team.
