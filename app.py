@@ -16,9 +16,13 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Initialize chat history
+# Initialize chat history and conversation context
 if "messages" not in st.session_state:
     st.session_state["messages"] = []
+
+# Store full conversation context
+if "conversation_memory" not in st.session_state:
+    st.session_state["conversation_memory"] = []
 
 # Display chat history
 for message in st.session_state["messages"]:
@@ -47,11 +51,17 @@ if user_query:
             with st.chat_message("user"):
                 st.markdown(user_query)
 
-            # Retrieve the best matching article
-            best_match_article = find_relevant_article(user_query)
+            # Store user query in conversation memory
+            st.session_state["conversation_memory"].append({"role": "user", "content": user_query})
 
-            # Get OpenAI response
-            ai_response = get_openai_response(user_query, best_match_article)
+            # Retrieve the best matching article and its similarity score
+            similarity_score, best_match_article = find_relevant_article(user_query)
+
+            # Get OpenAI response with full conversation history
+            ai_response = get_openai_response(best_match_article, st.session_state["conversation_memory"])
+
+            # Add assistant response to conversation memory
+            st.session_state["conversation_memory"].append({"role": "assistant", "content": ai_response})
 
             # Shorten full article text
             shortened_text = shorten_text(best_match_article.page_content, max_length=300)
@@ -62,13 +72,21 @@ if user_query:
                     response_content = ai_response
                     st.markdown(response_content)
                 else:
-                    response_content = (
-                        f"**Answer:**\n\n{ai_response}\n\n"
-                        f"**Search Result:**\n\n**{best_match_article.metadata.get('title', 'No Title Available')}** \n\n"
-                        f"{shortened_text} [Read more...]({best_match_article.metadata.get('source', '#')})\n\n"
-                        f"{':heavy_minus_sign:' * 35}"
+                    # Display search result only if the similarity score is greater than 95 percent.
+                    if similarity_score > 0.95:
+                        response_content = (
+                            f"**Answer:**\n\n{ai_response}\n\n"
+                            f"**Search Result:**\n\n**{best_match_article.metadata.get('title', 'No Title Available')}** \n\n"
+                            f"{shortened_text} [Read more...]({best_match_article.metadata.get('source', '#')})\n\n"
+                            f"{':heavy_minus_sign:' * 35}"
                     )
+                    else:
+                        response_content = (
+                            f"**Answer:**\n\n{ai_response}"
+                        )
+
                     st.markdown(response_content)
 
-            # Store response in chat history
+            # Store response in chat history and conversation context
             st.session_state["messages"].append({"role": "assistant", "content": response_content})
+
