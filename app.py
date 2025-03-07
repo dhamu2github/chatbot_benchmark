@@ -82,11 +82,11 @@ if user_query:
                     )
                     else:
                         response_content = (
-                            f"**Answer:**\n\n{ai_response}"
+                            f"**Answer:**\n\n{ai_response}\n\n"
+                            f"{':heavy_minus_sign:' * 35} "
                         )
 
                     st.markdown(response_content)
 
             # Store response in chat history and conversation context
             st.session_state["messages"].append({"role": "assistant", "content": response_content})
-
